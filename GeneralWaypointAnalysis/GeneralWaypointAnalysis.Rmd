@@ -1,0 +1,75 @@
+---
+title: "General Analysis of Waypoints"
+author: "Ken Locey, Indiana University"
+date: "1 June 2015"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## OVERVIEW
+This is an R Markdown document that allows formatted text, R code, and data to coexist in a single document...and in a way that can be 'knitted' together as an attractively formatted .pdf file.
+Here, we will pull in some waypoint data from the Peloncillo Project May 2015 trip, and run through a few analyses.
+Because these are geographical data, we will also use R as a Geographical Information Systems (GIS) environment to map and spatially examine data.
+
+## 1.) SETUP
+### A. Retrieve and Set Your Working Directory
+
+```{r, results = 'hide'}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/PeloncilloProject")
+```
+
+### B. Load Packages 
+We will use the `vegan` package for biodiversity estimators and related functions.
+We will also use a suite of six packages developed in R for geographical information systems (GIS).
+Be sure to run **install.packages(PackageName)**, if not previously installed, where PackageName is the name of the package you want installed.
+Or, run **install.packages(PackageName, type="source", dependencies=TRUE)**, if the previous command doesn't work.
+
+```{r, results = 'hide', message = FALSE, warning = FALSE} 
+require("vegan")
+
+require("sp")          # Classes and methods for handling spatial data
+require("geoR")        # Methods for geostatistical analyses
+require("rgdal")       # Geospatial Data Abstraction Library
+require("raster")      # Methods to create a RasterLayer object
+require("RgoogleMaps") # For querying the Google server for static maps. 
+require("maptools")    # Tools for manipulating and reading geospatial data
+```
+
+### C. Load a .csv file
+
+```{r, results = 'hide', message = FALSE, warning = FALSE} 
+Waypoints <- read.table(file="~/GitHub/PeloncilloProject/WayPointData/May2015/csv_files/All_units.csv", head=TRUE, sep=",")
+lats <- as.numeric(Waypoints$Latitude) # latitudes (north and south)
+lons <- as.numeric(Waypoints$Longitude) # longitudes (east and west)
+```
+
+If you're using RStudio, take a look at the `Environment` tab in the upper right of the console.
+There, you can see that the waypoints file was imported as an R data frame.
+
+## 2.) MAP SOME WAYPOINTS
+Let's visualize the spatial distribution of our samples with a basic map in RStudio.
+Let's generate a map of the refuge ponds using the `GetMap` function in the package `RgoogleMaps`.
+This map will be centered on the main Peloncillo Project study area ca. 31.52 latitude, -108.98 longitude.
+
+```{r}
+newmap <- GetMap(center = c(31.52, -108.98), zoom = 12, destfile = "PeloncilloMap.png",
+                 maptype="terrain")
+PlotOnStaticMap(newmap, zoom = 10, cex = 2, col='blue') # Plot map in RStudio
+PlotOnStaticMap(newmap, lats, lons, cex=1, pch=20, col='red', add = TRUE)
+```
+
+Note how this simple Google map was called within an Rscript, meaning R can not only do GIS but can easily access data from the internet, and then pull the data, code, figures, etc. together into a LaTex pdf.
+
+This map displays a lot of useful information that we otherwise, would not have been aware of. 
+For example, all but one points is on National Forest land and most are appear to occur within canyons.
+
+But, despite being a fast way to contextualize our wapoints within the broader landscape, the Google map misses a lot of information that would otherwise help us to understand the environmental and geographical factors that may coincide with our observations on diversity.
+Likewise, because the Google map is only an image, it doesn't contain any extractable environmental or geographic data.
+
+For spatially explicit data on environmental and geographic features, i.e. geospatial data, we can turn to one of the many freely accessible online GIS databases and warehouses.
+
+More to come...
